@@ -11,7 +11,7 @@ pub struct AmmConfig {
     /// Status to control if new pool can be create
     pub disable_create_pool: bool,
     /// Config index
-    pub index: u16,
+    // pub index: u16,
     /// The trade fee, denominated in hundredths of a bip (10^-6)
     pub trade_fee_rate: u64,
     /// The protocol fee

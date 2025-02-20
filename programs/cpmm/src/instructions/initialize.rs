@@ -24,7 +24,8 @@ pub struct Initialize<'info> {
     pub creator: Signer<'info>,
 
     /// Which config the pool belongs to.
-    #[account(mut,
+    #[account(
+        mut,
         seeds = [
             AMM_CONFIG_SEED.as_bytes(),
         ],

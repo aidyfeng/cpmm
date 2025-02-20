@@ -7,7 +7,7 @@ use anchor_lang::prelude::*;
 // #[instruction(index:u16)]
 pub struct UpdateAmmConfig<'info> {
     /// The amm config owner or admin
-    #[account(address = crate::admin::id() @ ErrorCode::InvalidOwner)]
+    // #[account(address = crate::admin::id() @ ErrorCode::InvalidOwner)]
     pub owner: Signer<'info>,
 
     /// Amm config account to be changed
@@ -22,7 +22,11 @@ pub struct UpdateAmmConfig<'info> {
     pub amm_config: Account<'info, AmmConfig>,
 }
 
-pub fn process_update_amm_config(ctx: Context<UpdateAmmConfig>, param: u8, value: u64) -> Result<()> {
+pub fn process_update_amm_config(
+    ctx: Context<UpdateAmmConfig>,
+    param: u8,
+    value: u64,
+) -> Result<()> {
     let amm_config: &mut Account<'_, AmmConfig> = &mut ctx.accounts.amm_config;
     let match_param: Option<u8> = Some(param);
     match match_param {

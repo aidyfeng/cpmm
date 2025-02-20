@@ -1,4 +1,3 @@
-use crate::error::ErrorCode;
 use crate::{constants, state::*};
 use anchor_lang::prelude::*;
 use std::ops::DerefMut;
@@ -9,7 +8,7 @@ pub struct CreateAmmConfig<'info> {
     /// Address to be set as protocol owner.
     #[account(
         mut,
-        address = crate::admin::id() @ ErrorCode::InvalidOwner
+        // address = crate::admin::id() @ ErrorCode::InvalidOwner
     )]
     pub owner: Signer<'info>,
 

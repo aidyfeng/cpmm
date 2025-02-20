@@ -15,10 +15,10 @@ pub use utils::*;
 
 declare_id!("5QWKxXbJjohpxLkEYk3G3yoirhRVVALZrBHzVThAnZyo");
 
-pub mod admin {
+/* pub mod admin {
     use anchor_lang::prelude::declare_id;
     declare_id!("GThUX1Atko4tqhN2NaiTazWSeFWMuiUvfFnyJyUghFMJ");
-}
+} */
 
 #[program]
 pub mod cpmm {

@@ -6,7 +6,8 @@ use anchor_lang::prelude::*;
 #[derive(Accounts)]
 pub struct UpdatePoolStatus<'info> {
     #[account(
-        address = crate::admin::id()
+        mut
+        // address = crate::admin::id()
     )]
     pub authority: Signer<'info>,
 
