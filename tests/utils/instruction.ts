@@ -1,32 +1,20 @@
-import { Program, BN } from "@coral-xyz/anchor";
+import { BN, Program } from "@coral-xyz/anchor";
+import {
+  ConfirmOptions,
+  Connection,
+  Keypair,
+  PublicKey,
+  Signer
+} from "@solana/web3.js";
 import { Cpmm } from "../../target/types/cpmm";
 import {
-  Connection,
-  ConfirmOptions,
-  PublicKey,
-  Keypair,
-  Signer,
-  SystemProgram,
-  SYSVAR_RENT_PUBKEY,
-} from "@solana/web3.js";
-import {
-  TOKEN_PROGRAM_ID,
-  TOKEN_2022_PROGRAM_ID,
-  getAssociatedTokenAddressSync,
-} from "@solana/spl-token";
-import {
   accountExist,
-  sendTransaction,
-  getAmmConfigAddress,
-  getAuthAddress,
-  getPoolAddress,
-  getPoolLpMintAddress,
-  getPoolVaultAddress,
   createTokenMintAndAssociatedTokenAccount,
-  getOrcleAccountAddress,
+  getAmmConfigAddress,
+  getPoolAddress,
+  sendTransaction
 } from "./index";
 
-import { ASSOCIATED_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";
 
 export async function setupInitializeTest(
   program: Program<Cpmm>,
@@ -58,9 +46,6 @@ export async function setupInitializeTest(
     owner,
     config.config_index,
     config.tradeFeeRate,
-    config.protocolFeeRate,
-    config.fundFeeRate,
-    config.create_fee,
     confirmOptions
   );
   return {
@@ -78,9 +63,6 @@ export async function createAmmConfig(
   owner: Signer,
   config_index: number,
   tradeFeeRate: BN,
-  protocolFeeRate: BN,
-  fundFeeRate: BN,
-  create_fee: BN,
   confirmOptions?: ConfirmOptions
 ): Promise<PublicKey> {
   const [address, _] = await getAmmConfigAddress(
@@ -93,11 +75,8 @@ export async function createAmmConfig(
 
   const ix = await program.methods
     .createAmmConfig(
-      // config_index,
+      config_index,
       tradeFeeRate,
-      protocolFeeRate,
-      fundFeeRate,
-      create_fee
     )
     .accounts({
       owner: owner.publicKey,
@@ -114,7 +93,7 @@ export async function createAmmConfig(
 export async function initialize(
   program: Program<Cpmm>,
   creator: Signer,
-  configAddress: PublicKey,
+  config_index: number,
   token0: PublicKey,
   token0Program: PublicKey,
   token1: PublicKey,
@@ -126,76 +105,19 @@ export async function initialize(
   },
   createPoolFee = new PublicKey("DNXgeM9EiiaAbaWvwjHj9fQQLAX5ZsfHyvmYUNRAdNC8")
 ) {
-  const [auth] = await getAuthAddress(program.programId);
-  const [poolAddress] = await getPoolAddress(
-    configAddress,
-    token0,
-    token1,
-    program.programId
-  );
-  const [lpMintAddress] = await getPoolLpMintAddress(
-    poolAddress,
-    program.programId
-  );
-  const [vault0] = await getPoolVaultAddress(
-    poolAddress,
-    token0,
-    program.programId
-  );
-  const [vault1] = await getPoolVaultAddress(
-    poolAddress,
-    token1,
-    program.programId
-  );
-  const [creatorLpTokenAddress] = await PublicKey.findProgramAddress(
-    [
-      creator.publicKey.toBuffer(),
-      TOKEN_PROGRAM_ID.toBuffer(),
-      lpMintAddress.toBuffer(),
-    ],
-    ASSOCIATED_PROGRAM_ID
-  );
+  const [ammConfigAddress] = await getAmmConfigAddress(config_index,program.programId);
 
-  const [observationAddress] = await getOrcleAccountAddress(
-    poolAddress,
-    program.programId
-  );
+  const [poolAddress] = await getPoolAddress(ammConfigAddress,token0,token1,program.programId);
 
-  const creatorToken0 = getAssociatedTokenAddressSync(
-    token0,
-    creator.publicKey,
-    false,
-    token0Program
-  );
-  const creatorToken1 = getAssociatedTokenAddressSync(
-    token1,
-    creator.publicKey,
-    false,
-    token1Program
-  );
   await program.methods
-    .initialize(initAmount.initAmount0, initAmount.initAmount1, new BN(0))
+    .initialize(initAmount.initAmount0, initAmount.initAmount1, new BN(0),config_index)
     .accounts({
-      creator: creator.publicKey,
-      // ammConfig: configAddress,
-      // authority: auth,
-      // poolState: poolAddress,
       token0Mint: token0,
       token1Mint: token1,
-      // lpMint: lpMintAddress,
-      creatorToken0,
-      creatorToken1,
-      // creatorLpToken: creatorLpTokenAddress,
-      // token0Vault: vault0,
-      // token1Vault: vault1,
-      // createPoolFee,
-      // observationState: observationAddress,
-      // tokenProgram: TOKEN_PROGRAM_ID,
       token0Program: token0Program,
       token1Program: token1Program,
-      // systemProgram: SystemProgram.programId,
-      // rent: SYSVAR_RENT_PUBKEY,
     })
+    .signers([creator])
     .rpc(confirmOptions);
   const poolState = await program.account.poolState.fetch(poolAddress);
   return { poolAddress, poolState };

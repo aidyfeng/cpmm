@@ -46,9 +46,6 @@ pub struct PoolState {
     /// token_1 program
     pub token_1_program: Pubkey,
 
-    /// observation account to store oracle data
-    pub observation_key: Pubkey,
-
     pub auth_bump: u8,
     /// Bitwise representation of the state of the pool
     /// bit0, 1: disable deposit(vaule is 1), 0: normal
@@ -63,13 +60,6 @@ pub struct PoolState {
 
     /// True circulating supply without burns and lock ups
     pub lp_supply: u64,
-    /// The amounts of token_0 and token_1 that are owed to the liquidity provider.
-    pub protocol_fees_token_0: u64,
-    pub protocol_fees_token_1: u64,
-
-    pub fund_fees_token_0: u64,
-    pub fund_fees_token_1: u64,
-
     /// The timestamp allowed for swap in the pool.
     pub open_time: u64,
     /// recent epoch
@@ -91,7 +81,6 @@ impl PoolState {
         token_0_mint: &InterfaceAccount<Mint>,
         token_1_mint: &InterfaceAccount<Mint>,
         lp_mint: &InterfaceAccount<Mint>,
-        // observation_key: Pubkey,
     ) {
         self.amm_config = amm_config.key();
         self.pool_creator = pool_creator.key();
@@ -108,10 +97,6 @@ impl PoolState {
         self.mint_0_decimals = token_0_mint.decimals;
         self.mint_1_decimals = token_1_mint.decimals;
         self.lp_supply = lp_supply;
-        self.protocol_fees_token_0 = 0;
-        self.protocol_fees_token_1 = 0;
-        self.fund_fees_token_0 = 0;
-        self.fund_fees_token_1 = 0;
         self.open_time = open_time;
         self.recent_epoch = Clock::get().unwrap().epoch;
         self.padding = [0u64; 31];
@@ -137,22 +122,10 @@ impl PoolState {
         self.status.bitand(status) == 0
     }
 
-    pub fn vault_amount_without_fee(&self, vault_0: u64, vault_1: u64) -> (u64, u64) {
-        (
-            vault_0
-                .checked_sub(self.protocol_fees_token_0 + self.fund_fees_token_0)
-                .unwrap(),
-            vault_1
-                .checked_sub(self.protocol_fees_token_1 + self.fund_fees_token_1)
-                .unwrap(),
-        )
-    }
-
     pub fn token_price_x32(&self, vault_0: u64, vault_1: u64) -> (u128, u128) {
-        let (token_0_amount, token_1_amount) = self.vault_amount_without_fee(vault_0, vault_1);
         (
-            token_1_amount as u128 * Q32 as u128 / token_0_amount as u128,
-            token_0_amount as u128 * Q32 as u128 / token_1_amount as u128,
+            vault_1 as u128 * Q32 as u128 / vault_0 as u128,
+            vault_0 as u128 * Q32 as u128 / vault_1 as u128,
         )
     }
 }

@@ -41,7 +41,7 @@ describe("cpmm", () => {
       const { poolAddress, poolState } = await initialize(
         program,
         owner,
-        configAddress,
+        0,
         token0,
         token0Program,
         token1,

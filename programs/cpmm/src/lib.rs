@@ -1,16 +1,16 @@
 pub mod constants;
+pub mod curve;
 pub mod error;
 pub mod instructions;
 pub mod state;
-pub mod curve;
 pub mod utils;
 
 use anchor_lang::prelude::*;
 
 pub use constants::*;
+pub use curve::*;
 pub use instructions::*;
 pub use state::*;
-pub use curve::*;
 pub use utils::*;
 
 declare_id!("5QWKxXbJjohpxLkEYk3G3yoirhRVVALZrBHzVThAnZyo");
@@ -25,7 +25,7 @@ pub mod cpmm {
 
     use super::*;
 
-        // The configuation of AMM protocol, include trade fee and protocol fee
+    // The configuation of AMM protocol, include trade fee and protocol fee
     /// # Arguments
     ///
     /// * `ctx`- The accounts needed by instruction.
@@ -36,41 +36,30 @@ pub mod cpmm {
     ///
     pub fn create_amm_config(
         ctx: Context<CreateAmmConfig>,
-        // index: u16,
+        index: u16,
         trade_fee_rate: u64,
-        protocol_fee_rate: u64,
-        fund_fee_rate: u64,
-        create_pool_fee: u64,
     ) -> Result<()> {
         assert!(trade_fee_rate < FEE_RATE_DENOMINATOR_VALUE);
-        assert!(protocol_fee_rate <= FEE_RATE_DENOMINATOR_VALUE);
-        assert!(fund_fee_rate <= FEE_RATE_DENOMINATOR_VALUE);
-        assert!(fund_fee_rate + protocol_fee_rate <= FEE_RATE_DENOMINATOR_VALUE);
-        instructions::process_create_amm_config(
-            ctx,
-            // index,
-            trade_fee_rate,
-            protocol_fee_rate,
-            fund_fee_rate,
-            create_pool_fee,
-        )
+        instructions::process_create_amm_config(ctx, index, trade_fee_rate)
     }
 
-        /// Updates the owner of the amm config
+    /// Updates the owner of the amm config
     /// Must be called by the current owner or admin
     ///
     /// # Arguments
     ///
     /// * `ctx`- The context of accounts
     /// * `trade_fee_rate`- The new trade fee rate of amm config, be set when `param` is 0
-    /// * `protocol_fee_rate`- The new protocol fee rate of amm config, be set when `param` is 1
-    /// * `fund_fee_rate`- The new fund fee rate of amm config, be set when `param` is 2
-    /// * `new_owner`- The config's new owner, be set when `param` is 3
-    /// * `new_fund_owner`- The config's new fund owner, be set when `param` is 4
-    /// * `param`- The vaule can be 0 | 1 | 2 | 3 | 4, otherwise will report a error
+    /// * `param`- The vaule can be 0 | 1 , otherwise will report a error
+    /// * `index`- The amm config index
     ///
-    pub fn update_amm_config(ctx: Context<UpdateAmmConfig>, param: u8, value: u64) -> Result<()> {
-        instructions::process_update_amm_config(ctx, param, value)
+    pub fn update_amm_config(
+        ctx: Context<UpdateAmmConfig>,
+        param: u8,
+        value: u64,
+        index: u16,
+    ) -> Result<()> {
+        instructions::process_update_amm_config(ctx, param, value, index)
     }
 
     /// Update pool status for given vaule
@@ -84,7 +73,7 @@ pub mod cpmm {
         instructions::process_update_pool_status(ctx, status)
     }
 
-        /// Creates a pool for the given token pair and the initial price
+    /// Creates a pool for the given token pair and the initial price
     ///
     /// # Arguments
     ///
@@ -98,8 +87,8 @@ pub mod cpmm {
         init_amount_0: u64,
         init_amount_1: u64,
         open_time: u64,
+        _index: u16
     ) -> Result<()> {
         instructions::process_initialize(ctx, init_amount_0, init_amount_1, open_time)
     }
-
 }

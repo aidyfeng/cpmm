@@ -18,6 +18,7 @@ use std::ops::Deref;
 use std::ops::DerefMut;
 
 #[derive(Accounts)]
+#[instruction(index:u16)]
 pub struct Initialize<'info> {
     /// Address paying to create the pool. Can be anyone
     #[account(mut)]
@@ -28,20 +29,20 @@ pub struct Initialize<'info> {
         mut,
         seeds = [
             AMM_CONFIG_SEED.as_bytes(),
+            &index.to_be_bytes()
         ],
         bump = amm_config.bump
     )]
-    pub amm_config: Account<'info, AmmConfig>,
+    pub amm_config: Box<Account<'info, AmmConfig>>,
 
     /// CHECK: pool vault and lp mint authority
-    /* #[account(
-        init_if_needed,
+    #[account(
         seeds = [
             crate::AUTH_SEED.as_bytes(),
         ],
         bump,
     )]
-    pub authority: UncheckedAccount<'info>, */
+    pub authority: UncheckedAccount<'info>,
 
     /// Initialize an account to store the pool state
     #[account(
@@ -80,7 +81,7 @@ pub struct Initialize<'info> {
         ],
         bump,
         mint::decimals = 9,
-        mint::authority = amm_config,
+        mint::authority = authority,
         payer = creator,
         mint::token_program = token_program,
     )]
@@ -89,16 +90,18 @@ pub struct Initialize<'info> {
     /// payer token0 account
     #[account(
         mut,
-        token::mint = token_0_mint,
-        token::authority = creator,
+        associated_token::mint = token_0_mint,
+        associated_token::authority = creator,
+        associated_token::token_program = token_0_program
     )]
     pub creator_token_0: Box<InterfaceAccount<'info, TokenAccount>>,
 
     /// creator token1 account
     #[account(
         mut,
-        token::mint = token_1_mint,
-        token::authority = creator,
+        associated_token::mint = token_1_mint,
+        associated_token::authority = creator,
+        associated_token::token_program = token_1_program
     )]
     pub creator_token_1: Box<InterfaceAccount<'info, TokenAccount>>,
 
@@ -117,7 +120,7 @@ pub struct Initialize<'info> {
         init,
         payer = creator,
         token::mint = token_0_mint,
-        token::authority = amm_config,
+        token::authority = authority,
         token::token_program = token_0_program,
         seeds = [
             POOL_VAULT_SEED.as_bytes(),
@@ -133,7 +136,7 @@ pub struct Initialize<'info> {
         init,
         payer = creator,
         token::mint = token_1_mint,
-        token::authority = amm_config,
+        token::authority = authority,
         token::token_program = token_1_program,
         seeds = [
             POOL_VAULT_SEED.as_bytes(),
@@ -143,26 +146,6 @@ pub struct Initialize<'info> {
         bump,
     )]
     pub token_1_vault: InterfaceAccount<'info, TokenAccount>,
-
-    /// create pool fee account
-    // #[account(
-    //     mut,
-    //     address= crate::create_pool_fee_reveiver::id(),
-    // )]
-    // pub create_pool_fee: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// an account to store oracle observations
-    // #[account(
-    //     init,
-    //     seeds = [
-    //         OBSERVATION_SEED.as_bytes(),
-    //         pool_state.key().as_ref(),
-    //     ],
-    //     bump,
-    //     payer = creator,
-    //     space = ObservationState::LEN
-    // )]
-    // pub observation_state: AccountLoader<'info, ObservationState>,
 
     /// Program to create mint account and mint tokens
     pub token_program: Program<'info, Token>,
@@ -302,7 +285,6 @@ pub fn process_initialize(
         &ctx.accounts.token_0_mint,
         &ctx.accounts.token_1_mint,
         &ctx.accounts.lp_mint,
-        // ctx.accounts.observation_state.key(),
     );
 
     Ok(())
