@@ -13,7 +13,7 @@ pub use instructions::*;
 pub use state::*;
 pub use utils::*;
 
-declare_id!("5QWKxXbJjohpxLkEYk3G3yoirhRVVALZrBHzVThAnZyo");
+declare_id!("HmjcsDRAWNMJtAfKzRuGLEUoj9rXidLJDfnJ5WMMYKz1");
 
 /* pub mod admin {
     use anchor_lang::prelude::declare_id;
@@ -84,10 +84,10 @@ pub mod cpmm {
     ///
     pub fn initialize(
         ctx: Context<Initialize>,
+        _index: u16,
         init_amount_0: u64,
         init_amount_1: u64,
         open_time: u64,
-        _index: u16
     ) -> Result<()> {
         instructions::process_initialize(ctx, init_amount_0, init_amount_1, open_time)
     }

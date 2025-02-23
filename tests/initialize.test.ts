@@ -1,12 +1,12 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
+import { getAccount } from "@solana/spl-token";
+import { BN } from "bn.js";
+import { assert } from "chai";
 import { Cpmm } from "../target/types/cpmm";
 import { initialize, setupInitializeTest } from "./utils";
-import { BN } from "bn.js";
-import { getAccount } from "@solana/spl-token";
-import { assert } from "chai";
 
-describe("cpmm", () => {
+describe("initialize", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
   const owner = anchor.Wallet.local().payer;
@@ -35,36 +35,35 @@ describe("cpmm", () => {
         confirmOptions
       );
 
+    const initAmount0 = new BN(10000000000);
+    const initAmount1 = new BN(10000000000);
+    const { poolAddress, poolState } = await initialize(
+      program,
+      owner,
+      0,
+      token0,
+      token0Program,
+      token1,
+      token1Program,
+      confirmOptions,
+      { initAmount0, initAmount1 }
+    );
 
-      const initAmount0 = new BN(10000000000);
-      const initAmount1 = new BN(10000000000);
-      const { poolAddress, poolState } = await initialize(
-        program,
-        owner,
-        0,
-        token0,
-        token0Program,
-        token1,
-        token1Program,
-        confirmOptions,
-        { initAmount0, initAmount1 }
-      );
+    let vault0 = await getAccount(
+      anchor.getProvider().connection,
+      poolState.token0Vault,
+      "processed",
+      poolState.token0Program
+    );
 
-      let vault0 = await getAccount(
-        anchor.getProvider().connection,
-        poolState.token0Vault,
-        "processed",
-        poolState.token0Program
-      );
-    
-      assert.equal(vault0.amount.toString(), initAmount0.toString());
+    assert.equal(vault0.amount.toString(), initAmount0.toString());
 
-      let vault1 = await getAccount(
-        anchor.getProvider().connection,
-        poolState.token1Vault,
-        "processed",
-        poolState.token1Program
-      );
-      assert.equal(vault1.amount.toString(), initAmount1.toString());
+    let vault1 = await getAccount(
+      anchor.getProvider().connection,
+      poolState.token1Vault,
+      "processed",
+      poolState.token1Program
+    );
+    assert.equal(vault1.amount.toString(), initAmount1.toString());
   });
 });

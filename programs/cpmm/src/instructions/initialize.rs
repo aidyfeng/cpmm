@@ -238,7 +238,7 @@ pub fn process_initialize(
         token_1_vault.amount
     );
     token::token_mint_to(
-        ctx.accounts.amm_config.to_account_info(),
+        ctx.accounts.authority.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.lp_mint.to_account_info(),
         ctx.accounts.creator_lp_token.to_account_info(),
@@ -247,32 +247,6 @@ pub fn process_initialize(
             .ok_or(ErrorCode::InitLpAmountTooLess)?,
         &[&[crate::AUTH_SEED.as_bytes(), &[ctx.accounts.amm_config.bump]]],
     )?;
-
-    /*  // Charge the fee to create a pool
-    if ctx.accounts.amm_config.create_pool_fee != 0 {
-        invoke(
-            &system_instruction::transfer(
-                ctx.accounts.creator.key,
-                &ctx.accounts.create_pool_fee.key(),
-                u64::from(ctx.accounts.amm_config.create_pool_fee),
-            ),
-            &[
-                ctx.accounts.creator.to_account_info(),
-                ctx.accounts.create_pool_fee.to_account_info(),
-                ctx.accounts.system_program.to_account_info(),
-            ],
-        )?;
-        invoke(
-            &spl_token::instruction::sync_native(
-                ctx.accounts.token_program.key,
-                &ctx.accounts.create_pool_fee.key(),
-            )?,
-            &[
-                ctx.accounts.token_program.to_account_info(),
-                ctx.accounts.create_pool_fee.to_account_info(),
-            ],
-        )?;
-    } */
 
     pool_state.initialize(
         ctx.accounts.amm_config.bump,

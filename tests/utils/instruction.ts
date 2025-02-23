@@ -4,7 +4,7 @@ import {
   Connection,
   Keypair,
   PublicKey,
-  Signer
+  Signer,
 } from "@solana/web3.js";
 import { Cpmm } from "../../target/types/cpmm";
 import {
@@ -12,9 +12,8 @@ import {
   createTokenMintAndAssociatedTokenAccount,
   getAmmConfigAddress,
   getPoolAddress,
-  sendTransaction
+  sendTransaction,
 } from "./index";
-
 
 export async function setupInitializeTest(
   program: Program<Cpmm>,
@@ -74,10 +73,7 @@ export async function createAmmConfig(
   }
 
   const ix = await program.methods
-    .createAmmConfig(
-      config_index,
-      tradeFeeRate,
-    )
+    .createAmmConfig(config_index, tradeFeeRate)
     .accounts({
       owner: owner.publicKey,
       // ammConfig: address,
@@ -102,23 +98,54 @@ export async function initialize(
   initAmount: { initAmount0: BN; initAmount1: BN } = {
     initAmount0: new BN(10000000000),
     initAmount1: new BN(20000000000),
-  },
-  createPoolFee = new PublicKey("DNXgeM9EiiaAbaWvwjHj9fQQLAX5ZsfHyvmYUNRAdNC8")
+  }
 ) {
-  const [ammConfigAddress] = await getAmmConfigAddress(config_index,program.programId);
+  const [ammConfigAddress] = await getAmmConfigAddress(
+    config_index,
+    program.programId
+  );
+  console.log("getAmmConfigAddress:", ammConfigAddress);
 
-  const [poolAddress] = await getPoolAddress(ammConfigAddress,token0,token1,program.programId);
+  const [poolAddress] = await getPoolAddress(
+    ammConfigAddress,
+    token0,
+    token1,
+    program.programId
+  );
+  console.log("getPoolAddress:", poolAddress);
 
-  await program.methods
-    .initialize(initAmount.initAmount0, initAmount.initAmount1, new BN(0),config_index)
+  console.log(
+    "initialize1:",
+    initAmount.initAmount0,
+    initAmount.initAmount1,
+    config_index
+  );
+  console.log(
+    "initialize2:",
+    creator.publicKey,
+    token0,
+    token1,
+    token0Program,
+    token1Program
+  );
+  const transactionSignature = await program.methods
+    .initialize(
+      config_index,
+      initAmount.initAmount0,
+      initAmount.initAmount1,
+      new BN(0)
+    )
     .accounts({
+      creator: creator.publicKey,
       token0Mint: token0,
       token1Mint: token1,
       token0Program: token0Program,
       token1Program: token1Program,
     })
-    .signers([creator])
     .rpc(confirmOptions);
+
+  console.log("initialize transactionSignature:", transactionSignature);
+
   const poolState = await program.account.poolState.fetch(poolAddress);
   return { poolAddress, poolState };
 }
