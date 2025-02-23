@@ -91,4 +91,21 @@ pub mod cpmm {
     ) -> Result<()> {
         instructions::process_initialize(ctx, init_amount_0, init_amount_1, open_time)
     }
+
+    /// deposit liquidity token into the pool
+    ///
+    /// # Arguments
+    /// * `ctx`- The context of accounts
+    /// * `lp_token_amount` - the lp_token amount_0 to deposit
+    /// * `maximum_token_0_amount` - Maximum token 0 amount to deposit, prevents excessive slippage
+    /// * `maximum_token_1_amount` - Maximum token 1 amount to deposit, prevents excessive slippage
+    ///
+    pub fn deposit(
+        ctx: Context<Deposit>,
+        lp_token_amount: u64,
+        maximum_token_0_amount: u64,
+        maximum_token_1_amount: u64,
+    ) -> Result<()> {
+        todo!()
+    }
 }

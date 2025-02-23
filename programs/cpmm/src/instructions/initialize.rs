@@ -249,7 +249,7 @@ pub fn process_initialize(
     )?;
 
     pool_state.initialize(
-        ctx.accounts.amm_config.bump,
+        ctx.bumps.authority,
         liquidity,
         open_time,
         ctx.accounts.creator.key(),
