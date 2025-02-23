@@ -111,7 +111,7 @@ pub struct Initialize<'info> {
         associated_token::mint = lp_mint,
         associated_token::authority = creator,
         payer = creator,
-        token::token_program = token_program,
+        associated_token::token_program = token_program,
     )]
     pub creator_lp_token: Box<InterfaceAccount<'info, TokenAccount>>,
 

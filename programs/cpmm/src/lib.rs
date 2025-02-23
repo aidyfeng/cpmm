@@ -102,6 +102,7 @@ pub mod cpmm {
     ///
     pub fn deposit(
         ctx: Context<Deposit>,
+        _index:u16,
         lp_token_amount: u64,
         maximum_token_0_amount: u64,
         maximum_token_1_amount: u64,
