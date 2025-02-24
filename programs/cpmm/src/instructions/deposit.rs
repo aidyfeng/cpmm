@@ -1,7 +1,9 @@
-use anchor_lang::prelude::*;
-use anchor_spl::{associated_token::AssociatedToken, token::Token, token_interface::{Mint, TokenAccount}};
+use std::ops::DerefMut;
 
-use crate::{AmmConfig, PoolState, POOL_SEED,AMM_CONFIG_SEED};
+use anchor_lang::prelude::*;
+use anchor_spl::{associated_token::AssociatedToken, token::{self, Token}, token_interface::{Mint, TokenAccount, TokenInterface}};
+
+use crate::{error::ErrorCode, token_mint_to, transfer_from_user_to_pool_vault, AmmConfig, CurveCalculator, PoolState, AMM_CONFIG_SEED, AUTH_SEED, POOL_SEED};
 
 
 #[derive(Accounts)]
@@ -107,8 +109,76 @@ pub struct Deposit<'info>{
     pub system_program: Program<'info,System>,
 
     /// the token program
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
 
     /// Program to create an ATA for receiving position NFT
     pub associated_token_program: Program<'info, AssociatedToken>,
+}
+
+
+pub fn deposit(
+    ctx: Context<Deposit>,
+    lp_token_amount: u64,
+    maximum_token_0_amount: u64,
+    maximum_token_1_amount: u64,
+) -> Result<()> {
+
+    let pool_state = ctx.accounts.pool_state.deref_mut();
+
+    //check pool state
+    if !pool_state.get_status_by_bit(crate::PoolStatusBitIndex::Deposit) {
+        return err!(ErrorCode::NotApproved);
+    }
+    
+    //caculate trading tokens
+    let result = CurveCalculator::lp_tokens_to_trading_tokens(
+            u128::from(lp_token_amount), 
+            u128::from(pool_state.lp_supply), 
+            u128::from(ctx.accounts.token_0_vault.amount), 
+            u128::from(ctx.accounts.token_1_vault.amount), 
+            crate::RoundDirection::Ceiling
+        ).ok_or(ErrorCode::ZeroTradingTokens)?;
+
+    let token_0_amount = u64::try_from(result.token_0_amount).unwrap();
+    let token_1_amount = u64::try_from(result.token_1_amount).unwrap();
+
+    if token_0_amount > maximum_token_0_amount 
+        || token_1_amount > maximum_token_1_amount {
+            return Err(ErrorCode::ExceededSlippage.into());
+    }
+
+    //transfer user token 0 to vault
+    transfer_from_user_to_pool_vault(
+        ctx.accounts.authority.to_account_info(), 
+        ctx.accounts.token_0_account.to_account_info(), 
+        ctx.accounts.token_0_vault.to_account_info(), 
+        ctx.accounts.token_0_mint.to_account_info(), 
+        ctx.accounts.token_program.to_account_info(), 
+        token_0_amount, 
+        ctx.accounts.token_0_mint.decimals)?;
+
+    //transfer user token 1 to vault
+    transfer_from_user_to_pool_vault(
+        ctx.accounts.authority.to_account_info(), 
+        ctx.accounts.token_1_account.to_account_info(), 
+        ctx.accounts.token_1_vault.to_account_info(), 
+        ctx.accounts.token_1_mint.to_account_info(), 
+        ctx.accounts.token_program.to_account_info(), 
+        token_1_amount, 
+        ctx.accounts.token_0_mint.decimals)?;
+    
+    pool_state.lp_supply = pool_state.lp_supply.checked_add(lp_token_amount).unwrap();
+
+    //mint lp_tokens
+    token_mint_to(
+    ctx.accounts.authority.to_account_info(),
+    ctx.accounts.token_program.to_account_info(),
+    ctx.accounts.lp_mint.to_account_info(),
+    ctx.accounts.owner_lp_token.to_account_info(), 
+    lp_token_amount, 
+    &[&[AUTH_SEED.as_bytes(),&[pool_state.auth_bump]]])?;
+
+    pool_state.recent_epoch = Clock::get()?.epoch;
+
+    Ok(())
 }

@@ -107,6 +107,6 @@ pub mod cpmm {
         maximum_token_0_amount: u64,
         maximum_token_1_amount: u64,
     ) -> Result<()> {
-        todo!()
+        instructions::deposit(ctx, lp_token_amount, maximum_token_0_amount, maximum_token_1_amount)
     }
 }

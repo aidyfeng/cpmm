@@ -62,13 +62,13 @@ pub struct Initialize<'info> {
     /// Token_0 mint, the key must smaller then token_1 mint.
     #[account(
         constraint = token_0_mint.key() < token_1_mint.key(),
-        mint::token_program = token_0_program,
+        mint::token_program = token_program,
     )]
     pub token_0_mint: Box<InterfaceAccount<'info, Mint>>,
 
     /// Token_1 mint, the key must grater then token_0 mint.
     #[account(
-        mint::token_program = token_1_program,
+        mint::token_program = token_program,
     )]
     pub token_1_mint: Box<InterfaceAccount<'info, Mint>>,
 
@@ -92,7 +92,7 @@ pub struct Initialize<'info> {
         mut,
         associated_token::mint = token_0_mint,
         associated_token::authority = creator,
-        associated_token::token_program = token_0_program
+        associated_token::token_program = token_program
     )]
     pub creator_token_0: Box<InterfaceAccount<'info, TokenAccount>>,
 
@@ -101,7 +101,7 @@ pub struct Initialize<'info> {
         mut,
         associated_token::mint = token_1_mint,
         associated_token::authority = creator,
-        associated_token::token_program = token_1_program
+        associated_token::token_program = token_program
     )]
     pub creator_token_1: Box<InterfaceAccount<'info, TokenAccount>>,
 
@@ -121,7 +121,7 @@ pub struct Initialize<'info> {
         payer = creator,
         token::mint = token_0_mint,
         token::authority = authority,
-        token::token_program = token_0_program,
+        token::token_program = token_program,
         seeds = [
             POOL_VAULT_SEED.as_bytes(),
             pool_state.key().as_ref(),
@@ -137,7 +137,7 @@ pub struct Initialize<'info> {
         payer = creator,
         token::mint = token_1_mint,
         token::authority = authority,
-        token::token_program = token_1_program,
+        token::token_program = token_program,
         seeds = [
             POOL_VAULT_SEED.as_bytes(),
             pool_state.key().as_ref(),
@@ -148,11 +148,7 @@ pub struct Initialize<'info> {
     pub token_1_vault: InterfaceAccount<'info, TokenAccount>,
 
     /// Program to create mint account and mint tokens
-    pub token_program: Program<'info, Token>,
-    /// Spl token program or token program 2022
-    pub token_0_program: Interface<'info, TokenInterface>,
-    /// Spl token program or token program 2022
-    pub token_1_program: Interface<'info, TokenInterface>,
+    pub token_program: Interface<'info, TokenInterface>,
     /// Program to create an ATA for receiving position NFT
     pub associated_token_program: Program<'info, AssociatedToken>,
     /// To create a new program account
@@ -188,7 +184,7 @@ pub fn process_initialize(
         ctx.accounts.creator_token_0.to_account_info(),
         ctx.accounts.token_0_vault.to_account_info(),
         ctx.accounts.token_0_mint.to_account_info(),
-        ctx.accounts.token_0_program.to_account_info(),
+        ctx.accounts.token_program.to_account_info(),
         init_amount_0,
         ctx.accounts.token_0_mint.decimals,
     )?;
@@ -198,7 +194,7 @@ pub fn process_initialize(
         ctx.accounts.creator_token_1.to_account_info(),
         ctx.accounts.token_1_vault.to_account_info(),
         ctx.accounts.token_1_mint.to_account_info(),
-        ctx.accounts.token_1_program.to_account_info(),
+        ctx.accounts.token_program.to_account_info(),
         init_amount_1,
         ctx.accounts.token_1_mint.decimals,
     )?;

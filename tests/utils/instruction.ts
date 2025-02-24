@@ -91,9 +91,8 @@ export async function initialize(
   creator: Signer,
   config_index: number,
   token0: PublicKey,
-  token0Program: PublicKey,
   token1: PublicKey,
-  token1Program: PublicKey,
+  tokenProgram: PublicKey,
   confirmOptions?: ConfirmOptions,
   initAmount: { initAmount0: BN; initAmount1: BN } = {
     initAmount0: new BN(10000000000),
@@ -125,8 +124,7 @@ export async function initialize(
     creator.publicKey,
     token0,
     token1,
-    token0Program,
-    token1Program
+    tokenProgram,
   );
   const transactionSignature = await program.methods
     .initialize(
@@ -139,8 +137,7 @@ export async function initialize(
       creator: creator.publicKey,
       token0Mint: token0,
       token1Mint: token1,
-      token0Program: token0Program,
-      token1Program: token1Program,
+      tokenProgram: tokenProgram,
     })
     .rpc(confirmOptions);
 
