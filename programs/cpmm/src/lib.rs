@@ -13,7 +13,7 @@ pub use instructions::*;
 pub use state::*;
 pub use utils::*;
 
-declare_id!("HmjcsDRAWNMJtAfKzRuGLEUoj9rXidLJDfnJ5WMMYKz1");
+declare_id!("5QWKxXbJjohpxLkEYk3G3yoirhRVVALZrBHzVThAnZyo");
 
 /* pub mod admin {
     use anchor_lang::prelude::declare_id;

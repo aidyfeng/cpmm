@@ -14,6 +14,7 @@ import {
   getPoolAddress,
   sendTransaction,
 } from "./index";
+import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 export async function setupInitializeTest(
   program: Program<Cpmm>,
@@ -91,8 +92,9 @@ export async function initialize(
   creator: Signer,
   config_index: number,
   token0: PublicKey,
+  token0Program:PublicKey,
   token1: PublicKey,
-  tokenProgram: PublicKey,
+  token1Program: PublicKey,
   confirmOptions?: ConfirmOptions,
   initAmount: { initAmount0: BN; initAmount1: BN } = {
     initAmount0: new BN(10000000000),
@@ -124,7 +126,8 @@ export async function initialize(
     creator.publicKey,
     token0,
     token1,
-    tokenProgram,
+    token0Program,
+    token1Program
   );
   const transactionSignature = await program.methods
     .initialize(
@@ -137,7 +140,8 @@ export async function initialize(
       creator: creator.publicKey,
       token0Mint: token0,
       token1Mint: token1,
-      tokenProgram: tokenProgram,
+      token0Program:token0Program,
+      token1Program:token1Program
     })
     .rpc(confirmOptions);
 

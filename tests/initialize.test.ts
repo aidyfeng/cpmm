@@ -42,6 +42,7 @@ describe("initialize", () => {
       owner,
       0,
       token0,
+      token0Program,
       token1,
       token1Program,
       confirmOptions,

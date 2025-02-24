@@ -1,7 +1,7 @@
 use std::ops::DerefMut;
 
 use anchor_lang::prelude::*;
-use anchor_spl::{associated_token::AssociatedToken, token::{self, Token}, token_interface::{Mint, TokenAccount, TokenInterface}};
+use anchor_spl::{associated_token::AssociatedToken, token::{self, Token}, token_2022::Token2022, token_interface::{Mint, TokenAccount, TokenInterface}};
 
 use crate::{error::ErrorCode, token_mint_to, transfer_from_user_to_pool_vault, AmmConfig, CurveCalculator, PoolState, AMM_CONFIG_SEED, AUTH_SEED, POOL_SEED};
 
@@ -109,7 +109,9 @@ pub struct Deposit<'info>{
     pub system_program: Program<'info,System>,
 
     /// the token program
-    pub token_program: Interface<'info, TokenInterface>,
+    pub token_program: Program<'info, Token>,
+
+    pub token_program_2022: Program<'info, Token2022>,
 
     /// Program to create an ATA for receiving position NFT
     pub associated_token_program: Program<'info, AssociatedToken>,
@@ -153,7 +155,11 @@ pub fn deposit(
         ctx.accounts.token_0_account.to_account_info(), 
         ctx.accounts.token_0_vault.to_account_info(), 
         ctx.accounts.token_0_mint.to_account_info(), 
-        ctx.accounts.token_program.to_account_info(), 
+        if ctx.accounts.token_0_mint.to_account_info().owner == ctx.accounts.token_program.key {
+            ctx.accounts.token_program.to_account_info()
+        }else {
+            ctx.accounts.token_program_2022.to_account_info()
+        },
         token_0_amount, 
         ctx.accounts.token_0_mint.decimals)?;
 
@@ -163,7 +169,11 @@ pub fn deposit(
         ctx.accounts.token_1_account.to_account_info(), 
         ctx.accounts.token_1_vault.to_account_info(), 
         ctx.accounts.token_1_mint.to_account_info(), 
-        ctx.accounts.token_program.to_account_info(), 
+        if ctx.accounts.token_0_mint.to_account_info().owner == ctx.accounts.token_program.key {
+            ctx.accounts.token_program.to_account_info()
+        }else {
+            ctx.accounts.token_program_2022.to_account_info()
+        },
         token_1_amount, 
         ctx.accounts.token_0_mint.decimals)?;
     
