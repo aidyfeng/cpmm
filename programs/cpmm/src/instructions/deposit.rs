@@ -1,7 +1,7 @@
 use std::ops::DerefMut;
 
 use anchor_lang::prelude::*;
-use anchor_spl::{associated_token::AssociatedToken, token::{self, Token}, token_2022::Token2022, token_interface::{Mint, TokenAccount, TokenInterface}};
+use anchor_spl::{associated_token::AssociatedToken, token::Token, token_2022::Token2022, token_interface::{Mint, TokenAccount}};
 
 use crate::{error::ErrorCode, token_mint_to, transfer_from_user_to_pool_vault, AmmConfig, CurveCalculator, PoolState, AMM_CONFIG_SEED, AUTH_SEED, POOL_SEED};
 
@@ -31,15 +31,15 @@ pub struct Deposit<'info>{
         ],
         bump = amm_config.bump
     )]
-    pub amm_config:Account<'info,AmmConfig>,
+    pub amm_config:Box<Account<'info,AmmConfig>>,
 
     /// pool state
     #[account(
-        has_one = lp_mint,
-        has_one = token_0_mint,
-        has_one = token_1_mint,
-        has_one = token_0_vault,
-        has_one = token_1_vault,
+        has_one = lp_mint @ ErrorCode::NotApproved,
+        // has_one = token_0_mint,
+        // has_one = token_1_mint,
+        has_one = token_0_vault @ ErrorCode::NotApproved,
+        has_one = token_1_vault @ ErrorCode::NotApproved,
         seeds = [
             POOL_SEED.as_bytes(),
             amm_config.key().as_ref(),
@@ -48,7 +48,7 @@ pub struct Deposit<'info>{
         ],
         bump
     )]
-    pub pool_state:Account<'info,PoolState>,
+    pub pool_state:Box<Account<'info,PoolState>>,
 
     /// Lp token mint
     #[account(mut)]
@@ -62,35 +62,39 @@ pub struct Deposit<'info>{
         payer = owner,
         associated_token::token_program = token_program,
     )]
-    pub owner_lp_token:InterfaceAccount<'info,TokenAccount>,
+    pub owner_lp_token:Box<InterfaceAccount<'info,TokenAccount>>,
 
     /// the mint of token 0
     #[account(
-        mut
+        mut,
+        address = token_0_account.mint @ ErrorCode::NotApproved
     )]
-    pub token_0_mint: InterfaceAccount<'info,Mint>,
+    pub token_0_mint: Box<InterfaceAccount<'info,Mint>>,
 
     /// owner's account of token 0
     #[account(
         mut,
         associated_token::mint = token_0_mint,
         associated_token::authority = owner,
+        associated_token::token_program = token_program
     )]
-    pub token_0_account: InterfaceAccount<'info,TokenAccount>,
+    pub token_0_account: Box<InterfaceAccount<'info,TokenAccount>>,
 
     /// the mint of token 1
     #[account(
-        mut
+        mut,
+        address = token_1_account.mint @ ErrorCode::NotApproved
     )]
-    pub token_1_mint: InterfaceAccount<'info,Mint>,
+    pub token_1_mint: Box<InterfaceAccount<'info,Mint>>,
 
     /// owner's account of token 1
     #[account(
         mut,
         associated_token::mint = token_1_mint,
         associated_token::authority = owner,
+        associated_token::token_program = token_program_2022
     )]
-    pub token_1_account: InterfaceAccount<'info,TokenAccount>,
+    pub token_1_account: Box<InterfaceAccount<'info,TokenAccount>>,
 
 
     /// The address that holds pool tokens for token_0
@@ -151,7 +155,7 @@ pub fn deposit(
 
     //transfer user token 0 to vault
     transfer_from_user_to_pool_vault(
-        ctx.accounts.authority.to_account_info(), 
+        ctx.accounts.owner.to_account_info(), 
         ctx.accounts.token_0_account.to_account_info(), 
         ctx.accounts.token_0_vault.to_account_info(), 
         ctx.accounts.token_0_mint.to_account_info(), 
@@ -165,17 +169,17 @@ pub fn deposit(
 
     //transfer user token 1 to vault
     transfer_from_user_to_pool_vault(
-        ctx.accounts.authority.to_account_info(), 
+        ctx.accounts.owner.to_account_info(), 
         ctx.accounts.token_1_account.to_account_info(), 
         ctx.accounts.token_1_vault.to_account_info(), 
         ctx.accounts.token_1_mint.to_account_info(), 
-        if ctx.accounts.token_0_mint.to_account_info().owner == ctx.accounts.token_program.key {
+        if ctx.accounts.token_1_mint.to_account_info().owner == ctx.accounts.token_program.key {
             ctx.accounts.token_program.to_account_info()
         }else {
             ctx.accounts.token_program_2022.to_account_info()
         },
         token_1_amount, 
-        ctx.accounts.token_0_mint.decimals)?;
+        ctx.accounts.token_1_mint.decimals)?;
     
     pool_state.lp_supply = pool_state.lp_supply.checked_add(lp_token_amount).unwrap();
 

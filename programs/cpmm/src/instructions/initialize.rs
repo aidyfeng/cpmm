@@ -129,7 +129,7 @@ pub struct Initialize<'info> {
         ],
         bump,
     )]
-    pub token_0_vault: InterfaceAccount<'info, TokenAccount>,
+    pub token_0_vault: Box<InterfaceAccount<'info, TokenAccount>>,
 
     /// CHECK: Token_1 vault for the pool, created by contract
     #[account(
@@ -145,7 +145,7 @@ pub struct Initialize<'info> {
         ],
         bump,
     )]
-    pub token_1_vault: InterfaceAccount<'info, TokenAccount>,
+    pub token_1_vault: Box<InterfaceAccount<'info, TokenAccount>>,
 
     /// Program to create mint account and mint tokens
     pub token_program: Program<'info, Token>,

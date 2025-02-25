@@ -115,7 +115,7 @@ export async function initialize(
   );
   console.log("getPoolAddress:", poolAddress);
 
-  console.log(
+  /* console.log(
     "initialize1:",
     initAmount.initAmount0,
     initAmount.initAmount1,
@@ -128,7 +128,7 @@ export async function initialize(
     token1,
     token0Program,
     token1Program
-  );
+  ); */
   const transactionSignature = await program.methods
     .initialize(
       config_index,
@@ -151,7 +151,7 @@ export async function initialize(
   return { poolAddress, poolState };
 }
 
-/* 
+
 export async function setupDepositTest(
   program: Program<Cpmm>,
   connection: Connection,
@@ -183,9 +183,6 @@ export async function setupDepositTest(
     owner,
     config.config_index,
     config.tradeFeeRate,
-    config.protocolFeeRate,
-    config.fundFeeRate,
-    config.create_fee,
     confirmOptions
   );
 
@@ -206,7 +203,7 @@ export async function setupDepositTest(
         return await initialize(
           program,
           owner,
-          configAddress,
+          config.config_index,
           token0,
           token0Program,
           token1,
@@ -219,7 +216,7 @@ export async function setupDepositTest(
       return await initialize(
         program,
         owner,
-        configAddress,
+        config.config_index,
         token0,
         token0Program,
         token1,
@@ -231,6 +228,32 @@ export async function setupDepositTest(
   }
 }
 
+export async function deposit(
+  program: Program<Cpmm>,
+  owner: Signer,
+  config_index: number,
+  token0Mint : PublicKey,
+  token1Mint : PublicKey,
+  lp_token_amount: BN,
+  maximum_token_0_amount: BN,
+  maximum_token_1_amount: BN,
+  confirmOptions?: ConfirmOptions
+) {
+
+  const tx = await program.methods
+    .deposit(config_index,lp_token_amount, maximum_token_0_amount, maximum_token_1_amount)
+    .accounts({
+      owner: owner.publicKey,
+      token0Mint: token0Mint,
+      token1Mint: token1Mint
+    })
+    .rpc(confirmOptions);
+
+  console.log("deposit tx:" ,tx);
+  return tx;
+}
+
+/* 
 export async function setupSwapTest(
   program: Program<Cpmm>,
   connection: Connection,
@@ -295,85 +318,6 @@ export async function setupSwapTest(
   return { configAddress, poolAddress, poolState };
 }
 
-
-
-export async function deposit(
-  program: Program<Cpmm>,
-  owner: Signer,
-  configAddress: PublicKey,
-  token0: PublicKey,
-  token0Program: PublicKey,
-  token1: PublicKey,
-  token1Program: PublicKey,
-  lp_token_amount: BN,
-  maximum_token_0_amount: BN,
-  maximum_token_1_amount: BN,
-  confirmOptions?: ConfirmOptions
-) {
-  const [auth] = await getAuthAddress(program.programId);
-  const [poolAddress] = await getPoolAddress(
-    configAddress,
-    token0,
-    token1,
-    program.programId
-  );
-
-  const [lpMintAddress] = await getPoolLpMintAddress(
-    poolAddress,
-    program.programId
-  );
-  const [vault0] = await getPoolVaultAddress(
-    poolAddress,
-    token0,
-    program.programId
-  );
-  const [vault1] = await getPoolVaultAddress(
-    poolAddress,
-    token1,
-    program.programId
-  );
-  const [ownerLpToken] = await PublicKey.findProgramAddress(
-    [
-      owner.publicKey.toBuffer(),
-      TOKEN_PROGRAM_ID.toBuffer(),
-      lpMintAddress.toBuffer(),
-    ],
-    ASSOCIATED_PROGRAM_ID
-  );
-
-  const onwerToken0 = getAssociatedTokenAddressSync(
-    token0,
-    owner.publicKey,
-    false,
-    token0Program
-  );
-  const onwerToken1 = getAssociatedTokenAddressSync(
-    token1,
-    owner.publicKey,
-    false,
-    token1Program
-  );
-
-  const tx = await program.methods
-    .deposit(lp_token_amount, maximum_token_0_amount, maximum_token_1_amount)
-    .accounts({
-      owner: owner.publicKey,
-      authority: auth,
-      poolState: poolAddress,
-      ownerLpToken,
-      token0Account: onwerToken0,
-      token1Account: onwerToken1,
-      token0Vault: vault0,
-      token1Vault: vault1,
-      tokenProgram: TOKEN_PROGRAM_ID,
-      tokenProgram2022: TOKEN_2022_PROGRAM_ID,
-      vault0Mint: token0,
-      vault1Mint: token1,
-      lpMint: lpMintAddress,
-    })
-    .rpc(confirmOptions);
-  return tx;
-}
 
 export async function withdraw(
   program: Program<Cpmm>,
