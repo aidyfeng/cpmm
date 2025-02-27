@@ -35,6 +35,7 @@ pub struct Deposit<'info>{
 
     /// pool state
     #[account(
+        mut,
         has_one = lp_mint @ ErrorCode::NotApproved,
         // has_one = token_0_mint,
         // has_one = token_1_mint,

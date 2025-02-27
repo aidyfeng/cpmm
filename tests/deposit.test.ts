@@ -66,6 +66,7 @@ describe("deposit test", () => {
           confirmOptions
         );
         const newPoolState = await program.account.poolState.fetch(poolAddress);
+        console.log("poolAddress:",poolAddress.toBase58());
         assert.equal(newPoolState.lpSupply.toNumber(),liquidity.add(poolState.lpSupply).toNumber());
 
         const {
