@@ -102,11 +102,26 @@ pub mod cpmm {
     ///
     pub fn deposit(
         ctx: Context<Deposit>,
-        _index:u16,
+        _index: u16,
         lp_token_amount: u64,
         maximum_token_0_amount: u64,
         maximum_token_1_amount: u64,
     ) -> Result<()> {
-        instructions::deposit(ctx, lp_token_amount, maximum_token_0_amount, maximum_token_1_amount)
+        instructions::process_deposit(
+            ctx,
+            lp_token_amount,
+            maximum_token_0_amount,
+            maximum_token_1_amount,
+        )
+    }
+
+    pub fn withdraw(
+        ctx: Context<Withdraw>,
+        _index: u16,
+        lp_token_amount: u64,
+        minimum_token_0_amount: u64,
+        minimum_token_1_amount: u64,
+    ) -> Result<()> {
+        instructions::process_withdraw(ctx, lp_token_amount, minimum_token_0_amount, minimum_token_1_amount)
     }
 }

@@ -123,7 +123,7 @@ pub struct Deposit<'info>{
 }
 
 
-pub fn deposit(
+pub fn process_deposit(
     ctx: Context<Deposit>,
     lp_token_amount: u64,
     maximum_token_0_amount: u64,

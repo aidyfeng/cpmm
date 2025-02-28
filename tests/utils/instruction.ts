@@ -1,4 +1,5 @@
 import { BN, Program } from "@coral-xyz/anchor";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import {
   ConfirmOptions,
   Connection,
@@ -14,7 +15,6 @@ import {
   getPoolAddress,
   sendTransaction,
 } from "./index";
-import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 export async function setupInitializeTest(
   program: Program<Cpmm>,
@@ -253,6 +253,31 @@ export async function deposit(
   return tx;
 }
 
+export async function withdraw(
+  program: Program<Cpmm>,
+  config_index: number,
+  token0: PublicKey,
+  token1: PublicKey,
+  lp_token_amount: BN,
+  minimum_token_0_amount: BN,
+  minimum_token_1_amount: BN,
+  confirmOptions?: ConfirmOptions
+) {
+
+  const tx = await program.methods
+    .withdraw(config_index,lp_token_amount, minimum_token_0_amount, minimum_token_1_amount)
+    .accounts({
+      vault0Mint: token0,
+      vault1Mint: token1,
+    })
+    .rpc(confirmOptions)
+    .catch();
+
+  console.log("withdraw tx",tx);
+
+  return tx;
+}
+
 /* 
 export async function setupSwapTest(
   program: Program<Cpmm>,
@@ -318,87 +343,6 @@ export async function setupSwapTest(
   return { configAddress, poolAddress, poolState };
 }
 
-
-export async function withdraw(
-  program: Program<Cpmm>,
-  owner: Signer,
-  configAddress: PublicKey,
-  token0: PublicKey,
-  token0Program: PublicKey,
-  token1: PublicKey,
-  token1Program: PublicKey,
-  lp_token_amount: BN,
-  minimum_token_0_amount: BN,
-  minimum_token_1_amount: BN,
-  confirmOptions?: ConfirmOptions
-) {
-  const [auth] = await getAuthAddress(program.programId);
-  const [poolAddress] = await getPoolAddress(
-    configAddress,
-    token0,
-    token1,
-    program.programId
-  );
-
-  const [lpMintAddress] = await getPoolLpMintAddress(
-    poolAddress,
-    program.programId
-  );
-  const [vault0] = await getPoolVaultAddress(
-    poolAddress,
-    token0,
-    program.programId
-  );
-  const [vault1] = await getPoolVaultAddress(
-    poolAddress,
-    token1,
-    program.programId
-  );
-  const [ownerLpToken] = await PublicKey.findProgramAddress(
-    [
-      owner.publicKey.toBuffer(),
-      TOKEN_PROGRAM_ID.toBuffer(),
-      lpMintAddress.toBuffer(),
-    ],
-    ASSOCIATED_PROGRAM_ID
-  );
-
-  const onwerToken0 = getAssociatedTokenAddressSync(
-    token0,
-    owner.publicKey,
-    false,
-    token0Program
-  );
-  const onwerToken1 = getAssociatedTokenAddressSync(
-    token1,
-    owner.publicKey,
-    false,
-    token1Program
-  );
-
-  const tx = await program.methods
-    .withdraw(lp_token_amount, minimum_token_0_amount, minimum_token_1_amount)
-    .accounts({
-      owner: owner.publicKey,
-      authority: auth,
-      poolState: poolAddress,
-      ownerLpToken,
-      token0Account: onwerToken0,
-      token1Account: onwerToken1,
-      token0Vault: vault0,
-      token1Vault: vault1,
-      tokenProgram: TOKEN_PROGRAM_ID,
-      tokenProgram2022: TOKEN_2022_PROGRAM_ID,
-      vault0Mint: token0,
-      vault1Mint: token1,
-      lpMint: lpMintAddress,
-      memoProgram: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
-    })
-    .rpc(confirmOptions)
-    .catch();
-
-  return tx;
-}
 
 export async function swap_base_input(
   program: Program<Cpmm>,
