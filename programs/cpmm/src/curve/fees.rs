@@ -50,6 +50,7 @@ impl Fees {
         )
     }
 
+    /// caculate pre fee from post fee
     pub fn calculate_pre_fee_amount(post_fee_amount: u128, trade_fee_rate: u64) -> Option<u128> {
         if trade_fee_rate == 0 {
             Some(post_fee_amount)

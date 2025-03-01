@@ -36,7 +36,7 @@ impl ConstantProductCurve {
     ) -> u128 {
         // (x + delta_x) * (y - delta_y) = x * y
         // delta_x = (x * delta_y) / (y - delta_y)
-        let numerator = swap_source_amount.checked_mul(destinsation_amount).unwrap();
+        let numerator: u128 = swap_source_amount.checked_mul(destinsation_amount).unwrap();
         let denominator = swap_destination_amount
             .checked_sub(destinsation_amount)
             .unwrap();

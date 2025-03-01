@@ -191,7 +191,7 @@ pub fn process_swap_base_input(ctx: Context<Swap>, amount_in: u64, minimum_amoun
 
     require_gte!(constant_after, constant_before);
 
-    let amount_out = u64::try_from(swap_result.destination_amount_swapped).unwrap();
+    let amount_out: u64 = u64::try_from(swap_result.destination_amount_swapped).unwrap();
     require_gte!(amount_out, minimum_amount_out, ErrorCode::ExceededSlippage);
     //3.transfer token
     //3.1 转移用户amount_in_token到vault

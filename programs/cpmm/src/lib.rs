@@ -138,4 +138,13 @@ pub mod cpmm {
     ) -> Result<()> {
         instructions::process_swap_base_input(ctx, amount_in, minimum_amount_out)
     }
+
+    pub fn swap_base_output(
+        ctx: Context<Swap>,
+        _index: u16,
+        amount_out: u64,
+        max_amount_in: u64,
+    ) -> Result<()> {
+        instructions::process_swap_base_output(ctx, amount_out, max_amount_in)
+    }
 }
