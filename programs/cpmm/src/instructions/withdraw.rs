@@ -187,5 +187,6 @@ pub fn process_withdraw(
             ctx.accounts.vault_1_mint.decimals, 
             &[&[crate::AUTH_SEED.as_bytes(),&[ctx.bumps.authority]]]
         )?;
+        pool_state.recent_epoch = Clock::get()?.epoch;
         Ok(())
 }
