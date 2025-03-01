@@ -122,7 +122,20 @@ pub mod cpmm {
         minimum_token_0_amount: u64,
         minimum_token_1_amount: u64,
     ) -> Result<()> {
-        instructions::process_withdraw(ctx, lp_token_amount, minimum_token_0_amount, minimum_token_1_amount)
+        instructions::process_withdraw(
+            ctx,
+            lp_token_amount,
+            minimum_token_0_amount,
+            minimum_token_1_amount,
+        )
     }
 
+    pub fn swap_base_input(
+        ctx: Context<Swap>,
+        _index: u16,
+        amount_in: u64,
+        minimum_amount_out: u64,
+    ) -> Result<()> {
+        instructions::process_swap_base_input(ctx, amount_in, minimum_amount_out)
+    }
 }

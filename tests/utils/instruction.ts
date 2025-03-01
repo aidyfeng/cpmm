@@ -279,7 +279,7 @@ export async function withdraw(
   return tx;
 }
 
-/* 
+
 export async function setupSwapTest(
   program: Program<Cpmm>,
   connection: Connection,
@@ -303,9 +303,6 @@ export async function setupSwapTest(
     owner,
     config.config_index,
     config.tradeFeeRate,
-    config.protocolFeeRate,
-    config.fundFeeRate,
-    config.create_fee,
     confirmOptions
   );
 
@@ -320,7 +317,7 @@ export async function setupSwapTest(
   const { poolAddress, poolState } = await initialize(
     program,
     owner,
-    configAddress,
+    config.config_index,
     token0,
     token0Program,
     token1,
@@ -331,11 +328,9 @@ export async function setupSwapTest(
   await deposit(
     program,
     owner,
-    poolState.ammConfig,
+    config.config_index,
     poolState.token0Mint,
-    poolState.token0Program,
     poolState.token1Mint,
-    poolState.token1Program,
     new BN(10000000000),
     new BN(100000000000),
     new BN(100000000000),
@@ -344,11 +339,11 @@ export async function setupSwapTest(
   return { configAddress, poolAddress, poolState };
 }
 
-
+ 
 export async function swap_base_input(
   program: Program<Cpmm>,
   owner: Signer,
-  configAddress: PublicKey,
+  config_index: number,
   inputToken: PublicKey,
   inputTokenProgram: PublicKey,
   outputToken: PublicKey,
@@ -357,64 +352,30 @@ export async function swap_base_input(
   minimum_amount_out: BN,
   confirmOptions?: ConfirmOptions
 ) {
-  const [auth] = await getAuthAddress(program.programId);
-  const [poolAddress] = await getPoolAddress(
-    configAddress,
-    inputToken,
-    outputToken,
-    program.programId
-  );
-
-  const [inputVault] = await getPoolVaultAddress(
-    poolAddress,
-    inputToken,
-    program.programId
-  );
-  const [outputVault] = await getPoolVaultAddress(
-    poolAddress,
-    outputToken,
-    program.programId
-  );
-
-  const inputTokenAccount = getAssociatedTokenAddressSync(
-    inputToken,
-    owner.publicKey,
-    false,
-    inputTokenProgram
-  );
-  const outputTokenAccount = getAssociatedTokenAddressSync(
-    outputToken,
-    owner.publicKey,
-    false,
-    outputTokenProgram
-  );
-  const [observationAddress] = await getOrcleAccountAddress(
-    poolAddress,
-    program.programId
-  );
 
   const tx = await program.methods
-    .swapBaseInput(amount_in, minimum_amount_out)
+    .swapBaseInput(config_index,amount_in, minimum_amount_out)
     .accounts({
       payer: owner.publicKey,
-      authority: auth,
-      ammConfig: configAddress,
-      poolState: poolAddress,
-      inputTokenAccount,
-      outputTokenAccount,
-      inputVault,
-      outputVault,
+      // authority: auth,
+      // ammConfig: configAddress,
+      // poolState: poolAddress,
+      // inputTokenAccount,
+      // outputTokenAccount,
+      // inputVault,
+      // outputVault,
       inputTokenProgram: inputTokenProgram,
       outputTokenProgram: outputTokenProgram,
       inputTokenMint: inputToken,
       outputTokenMint: outputToken,
-      observationState: observationAddress,
+      // observationState: observationAddress,
     })
     .rpc(confirmOptions);
 
   return tx;
 }
 
+/*
 export async function swap_base_output(
   program: Program<Cpmm>,
   owner: Signer,
