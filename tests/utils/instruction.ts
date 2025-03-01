@@ -267,6 +267,7 @@ export async function withdraw(
   const tx = await program.methods
     .withdraw(config_index,lp_token_amount, minimum_token_0_amount, minimum_token_1_amount)
     .accounts({
+      // owner: owner.publicKey,
       vault0Mint: token0,
       vault1Mint: token1,
     })

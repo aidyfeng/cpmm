@@ -7,6 +7,7 @@ use crate::{error::ErrorCode, token_burn, transfer_from_pool_vault_to_user, AmmC
 #[derive(Accounts)]
 #[instruction(index:u16)]
 pub struct Withdraw<'info> {
+    #[account(mut)]
     /// Pays to mint the position
     pub owner: Signer<'info>,
 
@@ -57,7 +58,7 @@ pub struct Withdraw<'info> {
     /// The token account for receive token_0, 
     #[account(
         mut,
-        associated_token::mint = token_0_vault.mint,
+        associated_token::mint = vault_0_mint,
         associated_token::authority = owner,
         associated_token::token_program = token_program
     )]
@@ -66,7 +67,7 @@ pub struct Withdraw<'info> {
     /// The token account for receive token_1
     #[account(
         mut,
-        associated_token::mint = token_1_vault.mint,
+        associated_token::mint = vault_1_mint,
         associated_token::authority = owner,
         associated_token::token_program = token_program_2022
     )]
@@ -116,6 +117,8 @@ pub struct Withdraw<'info> {
     pub memo_program: UncheckedAccount<'info>, */
 
     pub associated_token_program: Program<'info, AssociatedToken>,
+
+    pub system_program : Program<'info,System>
 }
 
 pub fn process_withdraw(
@@ -153,7 +156,7 @@ pub fn process_withdraw(
 
         //3.burn lp_tokens
         token_burn(
-            ctx.accounts.authority.to_account_info(), 
+            ctx.accounts.owner.to_account_info(), 
             ctx.accounts.token_program.to_account_info(), 
             ctx.accounts.lp_mint.to_account_info(), 
             ctx.accounts.owner_lp_token.to_account_info(), 
