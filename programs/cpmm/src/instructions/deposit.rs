@@ -1,7 +1,7 @@
 use std::ops::DerefMut;
 
 use anchor_lang::prelude::*;
-use anchor_spl::{associated_token::AssociatedToken, token::Token, token_2022::Token2022, token_interface::{Mint, TokenAccount}};
+use anchor_spl::{associated_token::AssociatedToken, token::Token, token_interface::{Mint, TokenAccount, TokenInterface}};
 
 use crate::{error::ErrorCode, token_mint_to, transfer_from_user_to_pool_vault, AmmConfig, CurveCalculator, PoolState, AMM_CONFIG_SEED, AUTH_SEED, POOL_SEED};
 
@@ -77,7 +77,7 @@ pub struct Deposit<'info>{
         mut,
         associated_token::mint = token_0_mint,
         associated_token::authority = owner,
-        associated_token::token_program = token_program
+        associated_token::token_program = token_0_program
     )]
     pub token_0_account: Box<InterfaceAccount<'info,TokenAccount>>,
 
@@ -93,7 +93,7 @@ pub struct Deposit<'info>{
         mut,
         associated_token::mint = token_1_mint,
         associated_token::authority = owner,
-        associated_token::token_program = token_program_2022
+        associated_token::token_program = token_1_program
     )]
     pub token_1_account: Box<InterfaceAccount<'info,TokenAccount>>,
 
@@ -114,9 +114,11 @@ pub struct Deposit<'info>{
     pub system_program: Program<'info,System>,
 
     /// the token program
-    pub token_program: Program<'info, Token>,
+    pub token_0_program: Interface<'info, TokenInterface>,
 
-    pub token_program_2022: Program<'info, Token2022>,
+    pub token_1_program: Interface<'info, TokenInterface>,
+
+    pub token_program:Program<'info,Token>,
 
     /// Program to create an ATA for receiving position NFT
     pub associated_token_program: Program<'info, AssociatedToken>,
@@ -160,11 +162,7 @@ pub fn process_deposit(
         ctx.accounts.token_0_account.to_account_info(), 
         ctx.accounts.token_0_vault.to_account_info(), 
         ctx.accounts.token_0_mint.to_account_info(), 
-        if ctx.accounts.token_0_mint.to_account_info().owner == ctx.accounts.token_program.key {
-            ctx.accounts.token_program.to_account_info()
-        }else {
-            ctx.accounts.token_program_2022.to_account_info()
-        },
+        ctx.accounts.token_0_program.to_account_info(),
         token_0_amount, 
         ctx.accounts.token_0_mint.decimals)?;
 
@@ -174,11 +172,7 @@ pub fn process_deposit(
         ctx.accounts.token_1_account.to_account_info(), 
         ctx.accounts.token_1_vault.to_account_info(), 
         ctx.accounts.token_1_mint.to_account_info(), 
-        if ctx.accounts.token_1_mint.to_account_info().owner == ctx.accounts.token_program.key {
-            ctx.accounts.token_program.to_account_info()
-        }else {
-            ctx.accounts.token_program_2022.to_account_info()
-        },
+        ctx.accounts.token_1_program.to_account_info(),
         token_1_amount, 
         ctx.accounts.token_1_mint.decimals)?;
     

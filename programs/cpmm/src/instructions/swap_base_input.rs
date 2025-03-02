@@ -8,7 +8,8 @@ use anchor_spl::{
 
 use crate::{
     error::ErrorCode, pool, transfer_from_pool_vault_to_user, transfer_from_user_to_pool_vault,
-    AmmConfig, CurveCalculator, PoolState, TradeDirection, AMM_CONFIG_SEED, POOL_SEED, POOL_VAULT_SEED,
+    AmmConfig, CurveCalculator, PoolState, TradeDirection, AMM_CONFIG_SEED, POOL_SEED,
+    POOL_VAULT_SEED,
 };
 
 #[derive(Accounts)]
@@ -61,7 +62,8 @@ pub struct Swap<'info> {
     pub input_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
-        mut,
+        init_if_needed,
+        payer = payer,
         associated_token::mint = output_token_mint,
         associated_token::authority = payer,
         associated_token::token_program = output_token_program
@@ -108,10 +110,16 @@ pub struct Swap<'info> {
     )]
     pub output_token_mint: Box<InterfaceAccount<'info, Mint>>,
 
-    pub associated_program: Program<'info, AssociatedToken>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
+
+    pub system_program: Program<'info, System>,
 }
 
-pub fn process_swap_base_input(ctx: Context<Swap>, amount_in: u64, minimum_amount_out: u64) -> Result<()> {
+pub fn process_swap_base_input(
+    ctx: Context<Swap>,
+    amount_in: u64,
+    minimum_amount_out: u64,
+) -> Result<()> {
     let block_timestamp = Clock::get()?.unix_timestamp as u64;
     let pool_state = ctx.accounts.pool_state.deref_mut();
     //校验交易池状态及开始时间
