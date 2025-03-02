@@ -38,7 +38,7 @@ describe("initialize", () => {
     const initAmount0 = new BN(10000000000);
     const initAmount1 = new BN(10000000000);
     const { poolAddress, poolState } = await initialize(
-      program,
+        program,
       owner,
       0,
       token0,

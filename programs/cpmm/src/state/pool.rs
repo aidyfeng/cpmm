@@ -20,9 +20,10 @@ pub enum PoolStatusBitFlag {
     Disable,
 }
 
-// #[account(zero_copy(unsafe))]
-#[account]
+#[account(zero_copy)]
 #[derive(Default, Debug, InitSpace)]
+// #[account]
+// #[derive(Default, Debug, InitSpace)]
 pub struct PoolState {
     /// Which config the pool belongs
     pub amm_config: Pubkey,
@@ -46,6 +47,7 @@ pub struct PoolState {
     /// token_1 program
     pub token_1_program: Pubkey,
 
+    pub bump: u8,
     pub auth_bump: u8,
     /// Bitwise representation of the state of the pool
     /// bit0, 1: disable deposit(vaule is 1), 0: normal
@@ -57,6 +59,8 @@ pub struct PoolState {
     /// mint0 and mint1 decimals
     pub mint_0_decimals: u8,
     pub mint_1_decimals: u8,
+
+    pub _padding1: [u8; 2],
 
     /// True circulating supply without burns and lock ups
     pub lp_supply: u64,
@@ -81,7 +85,9 @@ impl PoolState {
         token_0_mint: &InterfaceAccount<Mint>,
         token_1_mint: &InterfaceAccount<Mint>,
         lp_mint: &InterfaceAccount<Mint>,
+        bump: u8,
     ) {
+        self.bump = bump;
         self.amm_config = amm_config.key();
         self.pool_creator = pool_creator.key();
         self.token_0_vault = token_0_vault;

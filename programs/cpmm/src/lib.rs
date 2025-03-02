@@ -1,3 +1,4 @@
+#![allow(unexpected_cfgs)]
 pub mod constants;
 pub mod curve;
 pub mod error;
@@ -78,6 +79,7 @@ pub mod cpmm {
     /// # Arguments
     ///
     /// * `ctx`- The context of accounts
+    /// * `_index` - amm config index
     /// * `init_amount_0` - the initial amount_0 to deposit
     /// * `init_amount_1` - the initial amount_1 to deposit
     /// * `open_time` - the timestamp allowed for swap
@@ -92,10 +94,11 @@ pub mod cpmm {
         instructions::process_initialize(ctx, init_amount_0, init_amount_1, open_time)
     }
 
-    /// deposit liquidity token into the pool
+    /* /// deposit liquidity token into the pool
     ///
     /// # Arguments
     /// * `ctx`- The context of accounts
+    /// * `_index` - amm config index
     /// * `lp_token_amount` - the lp_token amount_0 to deposit
     /// * `maximum_token_0_amount` - Maximum token 0 amount to deposit, prevents excessive slippage
     /// * `maximum_token_1_amount` - Maximum token 1 amount to deposit, prevents excessive slippage
@@ -115,6 +118,16 @@ pub mod cpmm {
         )
     }
 
+    /// Withdraw lp for token0 ande token1
+    ///
+    /// # Arguments
+    ///
+    /// * `ctx`- The context of accounts
+    /// * `_index` - amm config index
+    /// * `lp_token_amount` - Amount of pool tokens to burn. User receives an output of token a and b based on the percentage of the pool tokens that are returned.
+    /// * `minimum_token_0_amount` -  Minimum amount of token 0 to receive, prevents excessive slippage
+    /// * `minimum_token_1_amount` -  Minimum amount of token 1 to receive, prevents excessive slippage
+    ///
     pub fn withdraw(
         ctx: Context<Withdraw>,
         _index: u16,
@@ -130,6 +143,15 @@ pub mod cpmm {
         )
     }
 
+    /// Swap the tokens in the pool base input amount
+    ///
+    /// # Arguments
+    ///
+    /// * `ctx`- The context of accounts
+    /// * `_index` - amm config index
+    /// * `amount_in` -  input amount to transfer, output to DESTINATION is based on the exchange rate
+    /// * `minimum_amount_out` -  Minimum amount of output token, prevents excessive slippage
+    ///
     pub fn swap_base_input(
         ctx: Context<Swap>,
         _index: u16,
@@ -139,6 +161,16 @@ pub mod cpmm {
         instructions::process_swap_base_input(ctx, amount_in, minimum_amount_out)
     }
 
+
+    /// Swap the tokens in the pool base output amount
+    ///
+    /// # Arguments
+    ///
+    /// * `ctx`- The context of accounts
+    /// * `_index` - amm config index
+    /// * `amount_out` -  amount of output token
+    /// * `max_amount_in` -  input amount prevents excessive slippage
+    ///
     pub fn swap_base_output(
         ctx: Context<Swap>,
         _index: u16,
@@ -146,5 +178,5 @@ pub mod cpmm {
         max_amount_in: u64,
     ) -> Result<()> {
         instructions::process_swap_base_output(ctx, amount_out, max_amount_in)
-    }
+    } */
 }
