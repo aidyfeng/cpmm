@@ -20,10 +20,10 @@ pub enum PoolStatusBitFlag {
     Disable,
 }
 
-#[account(zero_copy)]
-#[derive(Default, Debug, InitSpace)]
-// #[account]
+// #[account(zero_copy)]
 // #[derive(Default, Debug, InitSpace)]
+#[account]
+#[derive(Default, Debug, InitSpace)]
 pub struct PoolState {
     /// Which config the pool belongs
     pub amm_config: Pubkey,
@@ -59,8 +59,6 @@ pub struct PoolState {
     /// mint0 and mint1 decimals
     pub mint_0_decimals: u8,
     pub mint_1_decimals: u8,
-
-    pub _padding1: [u8; 2],
 
     /// True circulating supply without burns and lock ups
     pub lp_supply: u64,

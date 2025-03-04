@@ -15,6 +15,7 @@ use anchor_spl::{
     token_interface::{Mint, TokenAccount, TokenInterface},
 };
 use std::ops::Deref;
+use std::ops::DerefMut;
 
 #[derive(Accounts)]
 #[instruction(index:u16)]
@@ -56,7 +57,7 @@ pub struct Initialize<'info> {
         ],
         bump
     )]
-    pub pool_state: AccountLoader<'info, PoolState>,
+    pub pool_state: Box<Account<'info, PoolState>>,
 
     /// Token_0 mint, the key must smaller then token_1 mint.
     #[account(
@@ -178,7 +179,7 @@ pub fn process_initialize(
         open_time = block_timestamp + 1;
     }
 
-    let pool_state = &mut ctx.accounts.pool_state.load_init()?;
+    let pool_state = &mut ctx.accounts.pool_state.deref_mut();
 
     transfer_from_user_to_pool_vault(
         ctx.accounts.creator.to_account_info(),
@@ -258,6 +259,5 @@ pub fn process_initialize(
         &ctx.accounts.lp_mint,
         ctx.bumps.pool_state,
     );
-
     Ok(())
 }
