@@ -94,7 +94,7 @@ pub mod cpmm {
         instructions::process_initialize(ctx, init_amount_0, init_amount_1, open_time)
     }
 
-    /* /// deposit liquidity token into the pool
+    /// deposit liquidity token into the pool
     ///
     /// # Arguments
     /// * `ctx`- The context of accounts
@@ -178,5 +178,5 @@ pub mod cpmm {
         max_amount_in: u64,
     ) -> Result<()> {
         instructions::process_swap_base_output(ctx, amount_out, max_amount_in)
-    } */
+    }
 }

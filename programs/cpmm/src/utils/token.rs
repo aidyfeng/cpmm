@@ -178,10 +178,10 @@ pub fn is_supported_mint(mint_account: &InterfaceAccount<Mint>) -> Result<bool> 
     if *mint_info.owner == Token::id() {
         return Ok(true);
     }
-    let mint_whitelist: HashSet<&str> = MINT_WHITELIST.into_iter().collect();
+    /* let mint_whitelist: HashSet<&str> = MINT_WHITELIST.into_iter().collect();
     if mint_whitelist.contains(mint_account.key().to_string().as_str()) {
         return Ok(true);
-    }
+    } */
     let mint_data = mint_info.try_borrow_data()?;
     let mint = StateWithExtensions::<spl_token_2022::state::Mint>::unpack(&mint_data)?;
     let extensions = mint.get_extension_types()?;

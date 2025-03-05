@@ -16,7 +16,7 @@ pub struct Withdraw<'info> {
         seeds = [
             crate::AUTH_SEED.as_bytes(),
         ],
-        bump,
+        bump = pool_state.auth_bump,
     )]
     pub authority: UncheckedAccount<'info>,
 
@@ -42,7 +42,7 @@ pub struct Withdraw<'info> {
             vault_0_mint.key().as_ref(),
             vault_1_mint.key().as_ref(),
         ],
-        bump
+        bump = pool_state.bump
     )]
     pub pool_state: Account<'info, PoolState>,
 
@@ -163,7 +163,7 @@ pub fn process_withdraw(
             ctx.accounts.lp_mint.to_account_info(), 
             ctx.accounts.owner_lp_token.to_account_info(), 
             lp_token_amount, 
-            &[&[crate::AUTH_SEED.as_bytes(),&[ctx.bumps.authority]]])?;
+            &[&[crate::AUTH_SEED.as_bytes(),&[pool_state.auth_bump]]])?;
 
         //4.从vault 转账到user_token_account
         //4.1 从token_0_vault 转到 token_0_account
@@ -175,7 +175,7 @@ pub fn process_withdraw(
             ctx.accounts.token_0_program.to_account_info(), 
             token_0_amount, 
             ctx.accounts.vault_0_mint.decimals, 
-            &[&[crate::AUTH_SEED.as_bytes(),&[ctx.bumps.authority]]]
+            &[&[crate::AUTH_SEED.as_bytes(),&[pool_state.auth_bump]]]
         )?;
 
         //4.2 从token_1_vault 转到 token_1_account
@@ -187,7 +187,7 @@ pub fn process_withdraw(
             ctx.accounts.token_1_program.to_account_info(), 
             token_1_amount, 
             ctx.accounts.vault_1_mint.decimals, 
-            &[&[crate::AUTH_SEED.as_bytes(),&[ctx.bumps.authority]]]
+            &[&[crate::AUTH_SEED.as_bytes(),&[pool_state.auth_bump]]]
         )?;
         pool_state.recent_epoch = Clock::get()?.epoch;
         Ok(())

@@ -19,7 +19,7 @@ pub struct Deposit<'info>{
         seeds = [
             crate::AUTH_SEED.as_bytes(),
         ],
-        bump 
+        bump = pool_state.auth_bump
     )]
     pub authority:UncheckedAccount<'info>,
 
@@ -47,7 +47,7 @@ pub struct Deposit<'info>{
             token_0_mint.key().as_ref(),
             token_1_mint.key().as_ref(),
         ],
-        bump
+        bump = pool_state.bump
     )]
     pub pool_state:Box<Account<'info,PoolState>>,
 

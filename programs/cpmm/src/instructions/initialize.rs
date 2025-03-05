@@ -165,6 +165,7 @@ pub fn process_initialize(
     init_amount_1: u64,
     mut open_time: u64,
 ) -> Result<()> {
+    //1.判断mint是否被支持
     if !(is_supported_mint(&ctx.accounts.token_0_mint).unwrap()
         && is_supported_mint(&ctx.accounts.token_1_mint).unwrap())
     {
@@ -179,9 +180,10 @@ pub fn process_initialize(
         open_time = block_timestamp + 1;
     }
 
-    let pool_state = &mut ctx.accounts.pool_state.deref_mut();
+    let pool_state = ctx.accounts.pool_state.deref_mut();
 
-    transfer_from_user_to_pool_vault(
+    //2.user account transfer to vault account
+     transfer_from_user_to_pool_vault(
         ctx.accounts.creator.to_account_info(),
         ctx.accounts.creator_token_0.to_account_info(),
         ctx.accounts.token_0_vault.to_account_info(),
@@ -200,7 +202,7 @@ pub fn process_initialize(
         init_amount_1,
         ctx.accounts.token_1_mint.decimals,
     )?;
-
+    
     let token_0_vault =
         spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Account>::unpack(
             ctx.accounts
@@ -258,6 +260,6 @@ pub fn process_initialize(
         &ctx.accounts.token_1_mint,
         &ctx.accounts.lp_mint,
         ctx.bumps.pool_state,
-    );
+    ); 
     Ok(())
 }

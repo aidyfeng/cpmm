@@ -128,23 +128,25 @@ export async function initialize(
     token0Program,
     token1Program
   ); */
-  const transactionSignature = await program.methods
-    .initialize(
-      config_index,
-      initAmount.initAmount0,
-      initAmount.initAmount1,
-      new BN(0)
-    )
-    .accounts({
-      creator: creator.publicKey,
-      token0Mint: token0,
-      token1Mint: token1,
-      token0Program: token0Program,
-      token1Program: token1Program,
-    })
-    .rpc(confirmOptions);
+      const transactionSignature = await program.methods
+      .initialize(
+        config_index,
+        initAmount.initAmount0,
+        initAmount.initAmount1,
+        new BN(0)
+      )
+      .accounts({
+        creator: creator.publicKey,
+        token0Mint: token0,
+        token1Mint: token1,
+        token0Program: token0Program,
+        token1Program: token1Program,
+      })
+      .rpc(confirmOptions)
+      .catch(err => console.error("Transaction failed!", err));
 
-  console.log("initialize transactionSignature:", transactionSignature);
+    console.log("initialize transactionSignature:", transactionSignature);
+
 
   const poolState = await program.account.poolState.fetch(poolAddress);
   return { poolAddress, poolState };
