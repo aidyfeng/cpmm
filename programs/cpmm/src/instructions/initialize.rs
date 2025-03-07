@@ -202,8 +202,9 @@ pub fn process_initialize(
         init_amount_1,
         ctx.accounts.token_1_mint.decimals,
     )?;
-    
-    let token_0_vault =
+
+
+    /* let token_0_vault =
         spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Account>::unpack(
             ctx.accounts
                 .token_0_vault
@@ -220,12 +221,15 @@ pub fn process_initialize(
                 .try_borrow_data()?
                 .deref(),
         )?
-        .base;
+        .base; */
 
-    CurveCalculator::validate_supply(token_0_vault.amount, token_1_vault.amount)?;
+    ctx.accounts.token_0_vault.reload()?;
+    ctx.accounts.token_1_vault.reload()?;
 
-    let liquidity = U128::from(token_0_vault.amount)
-        .checked_mul(token_1_vault.amount.into())
+    CurveCalculator::validate_supply(ctx.accounts.token_0_vault.amount, ctx.accounts.token_1_vault.amount)?;
+
+    let liquidity = U128::from(ctx.accounts.token_0_vault.amount)
+        .checked_mul(ctx.accounts.token_1_vault.amount.into())
         .unwrap()
         .integer_sqrt()
         .as_u64();
@@ -234,8 +238,8 @@ pub fn process_initialize(
         "liquidity:{}, lock_lp_amount:{}, vault_0_amount:{},vault_1_amount:{}",
         liquidity,
         lock_lp_amount,
-        token_0_vault.amount,
-        token_1_vault.amount
+        ctx.accounts.token_0_vault.amount,
+        ctx.accounts.token_1_vault.amount
     );
     token::token_mint_to(
         ctx.accounts.authority.to_account_info(),
