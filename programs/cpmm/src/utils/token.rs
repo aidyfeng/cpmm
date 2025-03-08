@@ -17,7 +17,6 @@ use anchor_spl::{
         InitializeAccount3, Mint,
     },
 };
-use std::collections::HashSet;
 
 const MINT_WHITELIST: [&'static str; 4] = [
     "HVbpJAQGNpkgBaYBZQBR1t7yFdvaYVp2vCQQfKKEN4tM",

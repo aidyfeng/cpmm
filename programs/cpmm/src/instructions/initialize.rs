@@ -11,10 +11,8 @@ use anchor_lang::{
 use anchor_spl::token::Token;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token_2022::spl_token_2022,
     token_interface::{Mint, TokenAccount, TokenInterface},
 };
-use std::ops::Deref;
 use std::ops::DerefMut;
 
 #[derive(Accounts)]
@@ -155,8 +153,8 @@ pub struct Initialize<'info> {
     pub associated_token_program: Program<'info, AssociatedToken>,
     /// To create a new program account
     pub system_program: Program<'info, System>,
-    /// Sysvar for program account
-    pub rent: Sysvar<'info, Rent>,
+    /* /// Sysvar for program account
+    pub rent: Sysvar<'info, Rent>, */
 }
 
 pub fn process_initialize(
@@ -203,31 +201,12 @@ pub fn process_initialize(
         ctx.accounts.token_1_mint.decimals,
     )?;
 
-
-    /* let token_0_vault =
-        spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Account>::unpack(
-            ctx.accounts
-                .token_0_vault
-                .to_account_info()
-                .try_borrow_data()?
-                .deref(),
-        )?
-        .base;
-    let token_1_vault =
-        spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Account>::unpack(
-            ctx.accounts
-                .token_1_vault
-                .to_account_info()
-                .try_borrow_data()?
-                .deref(),
-        )?
-        .base; */
-
     ctx.accounts.token_0_vault.reload()?;
     ctx.accounts.token_1_vault.reload()?;
 
     CurveCalculator::validate_supply(ctx.accounts.token_0_vault.amount, ctx.accounts.token_1_vault.amount)?;
 
+    //3.计算liquidity,并mint_to user_lp_token_amount
     let liquidity = U128::from(ctx.accounts.token_0_vault.amount)
         .checked_mul(ctx.accounts.token_1_vault.amount.into())
         .unwrap()
@@ -252,6 +231,7 @@ pub fn process_initialize(
         &[&[crate::AUTH_SEED.as_bytes(), &[ctx.bumps.authority]]],
     )?;
 
+    //4.初始化pool_state账户
     pool_state.initialize(
         ctx.bumps.authority,
         liquidity,

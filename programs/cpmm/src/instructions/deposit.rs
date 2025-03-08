@@ -134,12 +134,12 @@ pub fn process_deposit(
 
     let pool_state = ctx.accounts.pool_state.deref_mut();
 
-    //check pool state
+    //1.检查 pool state
     if !pool_state.get_status_by_bit(crate::PoolStatusBitIndex::Deposit) {
         return err!(ErrorCode::NotApproved);
     }
     
-    //caculate trading tokens
+    //2.计算交易tokens
     let result = CurveCalculator::lp_tokens_to_trading_tokens(
             u128::from(lp_token_amount), 
             u128::from(pool_state.lp_supply), 
@@ -156,7 +156,8 @@ pub fn process_deposit(
             return Err(ErrorCode::ExceededSlippage.into());
     }
 
-    //transfer user token 0 to vault
+    //3. 把 user token 转到 vault账户
+    //3.1 转账token_0
     transfer_from_user_to_pool_vault(
         ctx.accounts.owner.to_account_info(), 
         ctx.accounts.token_0_account.to_account_info(), 
@@ -166,7 +167,7 @@ pub fn process_deposit(
         token_0_amount, 
         ctx.accounts.token_0_mint.decimals)?;
 
-    //transfer user token 1 to vault
+    //3.2 转账token_1
     transfer_from_user_to_pool_vault(
         ctx.accounts.owner.to_account_info(), 
         ctx.accounts.token_1_account.to_account_info(), 
@@ -176,9 +177,10 @@ pub fn process_deposit(
         token_1_amount, 
         ctx.accounts.token_1_mint.decimals)?;
     
+    //4.更新pool_state
     pool_state.lp_supply = pool_state.lp_supply.checked_add(lp_token_amount).unwrap();
 
-    //mint lp_tokens
+    //5.mint lp_tokens
     token_mint_to(
     ctx.accounts.authority.to_account_info(),
     ctx.accounts.token_program.to_account_info(),

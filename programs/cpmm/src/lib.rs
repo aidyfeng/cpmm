@@ -14,7 +14,14 @@ pub use instructions::*;
 pub use state::*;
 pub use utils::*;
 
-declare_id!("29od6Xm1nYbvVXG5NuRDbJJKURNj76C8dSy81jPv8VPb");
+/* #[cfg(not(feature = "no-entrypoint"))]
+solana_security_txt::security_txt! {
+    name: "cmpp",
+    source_code: "https://github.com/aidyfeng/cpmm",
+    preferred_languages: "cn"
+} */
+
+declare_id!("HmjcsDRAWNMJtAfKzRuGLEUoj9rXidLJDfnJ5WMMYKz1");
 
 /* pub mod admin {
     use anchor_lang::prelude::declare_id;
@@ -70,7 +77,11 @@ pub mod cpmm {
     /// * `ctx`- The context of accounts
     /// * `status` - The vaule of status
     ///
-    pub fn update_pool_status(ctx: Context<UpdatePoolStatus>, _index:u16,status: u8) -> Result<()> {
+    pub fn update_pool_status(
+        ctx: Context<UpdatePoolStatus>,
+        _index: u16,
+        status: u8,
+    ) -> Result<()> {
         instructions::process_update_pool_status(ctx, status)
     }
 
@@ -160,7 +171,6 @@ pub mod cpmm {
     ) -> Result<()> {
         instructions::process_swap_base_input(ctx, amount_in, minimum_amount_out)
     }
-
 
     /// Swap the tokens in the pool base output amount
     ///

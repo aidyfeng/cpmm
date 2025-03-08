@@ -92,8 +92,8 @@ export async function createTokenMintAndAssociatedTokenAccount(
 
   token0 = tokenArray[0].address;
   token1 = tokenArray[1].address;
-  //   console.log("Token 0", token0.toString());
-  //   console.log("Token 1", token1.toString());
+  console.log("Token 0", token0.toString());
+  console.log("Token 1", token1.toString());
   const token0Program = tokenArray[0].program;
   const token1Program = tokenArray[1].program;
 
