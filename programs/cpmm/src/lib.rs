@@ -25,7 +25,7 @@ solana_security_txt::security_txt! {
     auditors: "xxx"
 }
 
-declare_id!("29od6Xm1nYbvVXG5NuRDbJJKURNj76C8dSy81jPv8VPb");
+declare_id!("HmjcsDRAWNMJtAfKzRuGLEUoj9rXidLJDfnJ5WMMYKz1");
 
 /* pub mod admin {
     use anchor_lang::prelude::declare_id;
