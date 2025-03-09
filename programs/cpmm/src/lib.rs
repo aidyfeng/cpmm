@@ -14,14 +14,18 @@ pub use instructions::*;
 pub use state::*;
 pub use utils::*;
 
-/* #[cfg(not(feature = "no-entrypoint"))]
+#[cfg(not(feature = "no-entrypoint"))]
 solana_security_txt::security_txt! {
     name: "cmpp",
+    project_url: "https://xxx.io",
     source_code: "https://github.com/aidyfeng/cpmm",
-    preferred_languages: "cn"
-} */
+    contacts: "link:xxx",
+    policy: "xxx",
+    preferred_languages: "cn",
+    auditors: "xxx"
+}
 
-declare_id!("HmjcsDRAWNMJtAfKzRuGLEUoj9rXidLJDfnJ5WMMYKz1");
+declare_id!("29od6Xm1nYbvVXG5NuRDbJJKURNj76C8dSy81jPv8VPb");
 
 /* pub mod admin {
     use anchor_lang::prelude::declare_id;
